@@ -5,6 +5,9 @@ from pathlib import Path
 
 import streamlit as st
 
+# Open the guide sidebar by default so first-time users see how to use the app.
+st.set_page_config(page_title="밤길 지킴이", page_icon="🌙", initial_sidebar_state="expanded")
+
 # Streamlit Cloud keeps keys in st.secrets; config.py reads env vars, so copy them over.
 try:
     for key, value in st.secrets.items():
@@ -20,27 +23,32 @@ EXAMPLES = [
     "내일 밤 11시에 충북대 정문에서 사창동까지 안심귀가 신청해 줘",
 ]
 
+GUIDE_PATH = Path(__file__).parent / "USER_GUIDE.md"
+
+
+def guide_sections() -> list:
+    """Split USER_GUIDE.md into (title, body) pairs, one per '## ' heading."""
+    try:
+        text = GUIDE_PATH.read_text(encoding="utf-8")
+    except OSError:
+        return []
+    sections = []
+    for block in text.split("\n## ")[1:]:
+        title, _, body = block.partition("\n")
+        sections.append((title.strip(), body.replace("\n---", "").strip()))
+    return sections
+
+
 with st.sidebar:
-    st.header("📖 사용 방법")
-    st.markdown(
-        "1. **지금 시각**과 **가려는 동네**를 함께 적어 주세요.\n"
-        "2. 답변 위의 🔧 를 누르면 에이전트가 어떤 도구로 확인했는지 볼 수 있어요.\n"
-        "3. 안심귀가 신청은 내용을 확인한 뒤 **\"응\"** 이라고 답해야 저장돼요."
-    )
-    st.subheader("📍 지원 지역 (충북대 정문 출발)")
-    st.markdown("개신동 · 사창동 · 복대동 · 봉명동 · 율량동")
+    st.header("📖 사용 설명서")
+    st.caption("궁금한 항목을 눌러 펼쳐 보세요.")
+    for i, (title, body) in enumerate(guide_sections()):
+        with st.expander(title, expanded=(i == 0)):
+            st.markdown(body)
     st.subheader("💬 예시 질문")
     st.caption("오른쪽 위 복사 버튼을 눌러 아래 입력창에 붙여 넣으세요.")
     for example in EXAMPLES:
-        st.code(example, language=None)
-    st.subheader("❓ 이런 걸 알려줘요")
-    st.markdown(
-        "- 걸어가도 괜찮은지 (위험도 0~100점)\n"
-        "- 지금 열린 지구대·24시 편의점·안심지킴이집\n"
-        "- 도보 시간, 가로등·CCTV, 막차 시간\n"
-        "- 심야 할증 포함 택시비\n"
-        "- 안심귀가 동행 신청 (22:00~01:00)"
-    )
+        st.code(example, language=None, wrap_lines=True)
     if st.button("🔄 대화 새로 시작", use_container_width=True):
         st.session_state.clear()
         st.rerun()
