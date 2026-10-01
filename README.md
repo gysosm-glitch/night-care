@@ -4,6 +4,10 @@
 
 📖 **사용 설명서: [USER_GUIDE.md](USER_GUIDE.md)** (웹 앱 왼쪽 사이드바에도 사용법이 있어요)
 
+## 데이터 출처
+- 지구대·파출소: 공공데이터포털, [경찰청 충청북도경찰청_지구대 파출소 현황](https://www.data.go.kr/data/15007450/fileData.do) (2026-08-03, 이용허락범위 제한 없음)
+- 그 밖의 장소·경로·요금: 수업용 가상 데이터
+
 ## Setup
 ```
 pip install -r requirements.txt

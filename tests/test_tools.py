@@ -25,18 +25,31 @@ def test_time_window_crosses_midnight():
 def test_spots_late_night_bongmyeong():
     from src.tools.spot_tools import find_safe_spots
     ids = {s["id"] for s in find_safe_spots("봉명동", "23:30")["spots"]}
-    assert ids == {"S7", "S8"}
+    assert ids == {"S7", "S8", "S11"}
 
 
 def test_spots_safe_house_after_midnight():
     from src.tools.spot_tools import find_safe_spots
-    assert {s["id"] for s in find_safe_spots("봉명동", "00:30")["spots"]} == {"S7", "S8"}
-    assert {s["id"] for s in find_safe_spots("봉명동", "01:30")["spots"]} == {"S7"}
+    assert {s["id"] for s in find_safe_spots("봉명동", "00:30")["spots"]} == {"S7", "S8", "S11"}
+    assert {s["id"] for s in find_safe_spots("봉명동", "01:30")["spots"]} == {"S7", "S11"}
 
 
 def test_spots_closed_safe_house_excluded():
     from src.tools.spot_tools import find_safe_spots
     assert {s["id"] for s in find_safe_spots("복대동", "23:30")["spots"]} == {"S5"}
+
+
+def test_spots_real_police_has_phone_and_address():
+    from src.tools.spot_tools import find_safe_spots
+    police = next(s for s in find_safe_spots("사창동", "23:00")["spots"] if s["type"] == "지구대")
+    assert police["source"] == "공공데이터"
+    assert police["phone"] == "043-251-1703" and "1순환로 690" in police["address"]
+
+
+def test_spots_fake_spot_has_no_phone():
+    from src.tools.spot_tools import find_safe_spots
+    store = find_safe_spots("개신동", "23:00")["spots"][0]
+    assert store["source"] == "가상" and "phone" not in store
 
 
 def test_spots_unknown_area_has_hint():

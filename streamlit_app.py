@@ -54,13 +54,19 @@ def show_safe_spots() -> None:
     now = datetime.now(ZoneInfo("Asia/Seoul")).time().replace(second=0, microsecond=0)
     when = st.time_input("시각 (기본: 지금)", value=now, step=600)
     result = find_safe_spots(area, when.strftime("%H:%M"))
-    if result.get("spots"):
-        st.markdown("\n".join(
-            f"- {SPOT_ICONS.get(s['type'], '📍')} **{s['name']}** · {s['type']} · {s['open_until']}까지"
-            for s in result["spots"]))
-    else:
+    for s in result.get("spots", []):
+        line = f"{SPOT_ICONS.get(s['type'], '📍')} **{s['name']}** · {s['open_until']}까지"
+        if s.get("source") == "가상":
+            line += " · _(가상)_"
+        if s.get("phone"):
+            line += f"  \n📞 [{s['phone']}](tel:{s['phone']}) · {s['address']}"
+        st.markdown(line)
+    if not result.get("spots"):
         st.error("지금 열린 안심구역이 없어요. 위급하면 바로 **112**에 신고하세요.")
-    st.caption("🚨 위급하면 112 전화 · 문자 신고도 112로 · 장소는 데모용 가상 데이터")
+    elif not any(s.get("source") == "공공데이터" for s in result["spots"]):
+        st.info("이 동네 지구대·파출소는 공공데이터에 없어요. 다른 동네를 골라 가까운 지구대를 확인하세요.")
+    st.caption("🚨 위급하면 112 전화 · 문자 신고도 112로  \n"
+               "지구대: 공공데이터포털(충북경찰청, 2026-08-03) · 편의점·지킴이집: 가상 데이터")
     st.divider()
 
 

@@ -12,7 +12,9 @@ Written for this agent: docs/01_brief.md, docs/03_tool_spec.md, data/*.json, src
 ## Data files (5–10 realistic entries each is the goal; 가상 데이터)
 > 초안 (Claude 작성) — 팀 검토 후 이 줄을 지우세요.
 
-- `data/safe_spots.json` — `{"spots": [{"id","name","type","area","open","close"}]}`
+- `data/safe_spots.json` — `{"source_note", "spots": [{"id","name","type","area","open","close","source", "address"?, "phone"?}]}`
+  - 지구대·파출소 (`source: "공공데이터"`): converted from `data/경찰청 충청북도경찰청_지구대 파출소 현황_20260803.csv` (공공데이터포털, cp949). Matched to a district by station name (사창·복대·봉명·율량). The file has no 서원경찰서 stations, so 개신동 has none.
+  - stores and 안심지킴이집 (`source: "가상"`): fake demo data
   - type: 지구대, 파출소, 24시 편의점, 안심지킴이집
 - `data/routes.json` — `{"origin": "충북대 정문", "routes": {"사창동": {"walk_minutes","lit_ratio","cctv","busy_until","bus_line","bus_minutes","fare","last_bus"}}}`
   - lit_ratio: 0.0–1.0, share of the walking route with streetlights

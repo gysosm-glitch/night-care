@@ -35,7 +35,7 @@ A 충북대 student living alone near campus (개신동/사창동/복대동/봉�
 
 ## Out of scope
 - Real APIs (경찰청, 공공데이터, bus, map), real-time GPS tracking, calling 112 or messaging friends for the user, payments, multiple users / login
-- ALL data is fake demo data in `data/*.json`
+- 지구대·파출소 come from 공공데이터포털 (충북경찰청, 2026-08-03), converted once into `data/safe_spots.json`. Everything else (stores, 안심지킴이집, routes, CCTV, fares) is fake demo data. No live API calls.
 - The assistant never says a route is "100% safe" and never replaces 112.
 
 ## Why this is not a café agent (rename test)

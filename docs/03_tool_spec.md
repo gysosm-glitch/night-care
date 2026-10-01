@@ -12,7 +12,8 @@ Write the spec BEFORE implementing a tool. The "Purpose" line becomes the tool d
 - Purpose: Find safe spots (police boxes, 24-hour convenience stores, 안심지킴이집) open at a given time in a district.
 - Type: read
 - Parameters: area (string, required) — district name; time (string, required) — 24-hour HH:MM
-- Returns: `{"area": "봉명동", "time": "23:30", "spots": [{"id": "S7", "name": "가상 봉명 24시 편의점", "type": "24시 편의점", "open_until": "24:00"}, {"id": "S8", "name": "가상 봉명 안심지킴이집", "type": "안심지킴이집", "open_until": "01:00"}]}`
+- Returns: `{"area": "봉명동", "time": "23:30", "spots": [{"id": "S11", "name": "봉명 지구대", "type": "지구대", "address": "충북 청주시 흥덕구 송절로64번길 13", "phone": "043-270-3705", "source": "공공데이터", "open_until": "24:00"}, {"id": "S7", "name": "가상 봉명 24시 편의점", "type": "24시 편의점", "source": "가상", "open_until": "24:00"}]}`
+  - `address` and `phone` appear only for spots that have them (real 지구대·파출소 from 공공데이터포털). `source` is `"공공데이터"` or `"가상"`.
   - If nothing is open: `"spots": []` plus `"hint": "No safe spot open now. Call 112 in an emergency."`
 - Errors: unknown area → `{"error": "Unknown area '송정동'. Valid: 개신동, 사창동, 복대동, 봉명동, 율량동."}`; bad time → `{"error": "Invalid time. Use 24-hour HH:MM, e.g. '23:10'."}`
 - Example request: "봉명동 가는 길에 지금 들어갈 수 있는 안전한 곳 있어?"

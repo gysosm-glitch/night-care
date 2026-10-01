@@ -13,8 +13,9 @@ def find_safe_spots(area: str, time: str) -> dict:
     now = to_minutes(time)
     if now is None:
         return {"error": TIME_ERROR}
+    keys = ["id", "name", "type", "address", "phone", "source"]
     spots = [
-        {"id": s["id"], "name": s["name"], "type": s["type"], "open_until": s["close"]}
+        {**{k: s[k] for k in keys if k in s}, "open_until": s["close"]}
         for s in data_store.load("safe_spots")["spots"]
         if s["area"] == area and in_window(now, s["open"], s["close"])
     ]
