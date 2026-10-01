@@ -11,3 +11,11 @@ def to_minutes(text: str) -> int | None:
     if m > 59 or h > 24 or (h == 24 and m > 0):
         return None
     return h * 60 + m
+
+
+def in_window(now: int, start: str, end: str) -> bool:
+    """True if `now` (minutes) is in [start, end). Handles windows that cross midnight, e.g. 22:00-01:00."""
+    s, e = to_minutes(start), to_minutes(end)
+    if s <= e:
+        return s <= now < e
+    return now >= s or now < e

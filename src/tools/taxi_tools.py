@@ -28,7 +28,7 @@ ESTIMATE_TAXI_COST_SCHEMA = {
         "parameters": {
             "type": "object",
             "properties": {
-                "minutes": {"type": "number", "description": "Trip length in minutes, e.g. 12"},
+                "minutes": {"type": "number", "description": "Car trip length in minutes: use bus_minutes from get_route, NOT walk_minutes"},
                 "time": {"type": "string", "description": "Departure time in 24-hour HH:MM, e.g. '23:10'"},
             },
             "required": ["minutes", "time"],

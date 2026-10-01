@@ -3,8 +3,8 @@ import streamlit as st
 
 from src.agent import NightCareAgent
 
-st.title("🌙 청주 밤샘 케어 에이전트")
-st.caption("충북대생을 위한 밤·주말 병원/약국 + 이동 + 택시비 도우미 (가상 데이터)")
+st.title("🌙 청주 밤길 안심 귀가 에이전트")
+st.caption("충북대생을 위한 밤길 위험도 · 안전한 장소 · 막차/택시 · 안심귀가 신청 도우미 (가상 데이터)")
 
 if "agent" not in st.session_state:
     st.session_state.agent = NightCareAgent()
@@ -13,7 +13,7 @@ if "agent" not in st.session_state:
 for role, text in st.session_state.chat:
     st.chat_message(role).write(text)
 
-if prompt := st.chat_input("예: 지금 밤 11시인데 열이 나. 갈 곳이랑 택시비 알려줘"):
+if prompt := st.chat_input("예: 지금 밤 11시 10분인데 사창동까지 걸어가도 괜찮을까?"):
     st.chat_message("user").write(prompt)
     agent = st.session_state.agent
     answer = agent.run(prompt)

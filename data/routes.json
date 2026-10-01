@@ -1,6 +1,7 @@
 {"origin": "충북대 정문", "routes": {
- "사창동": {"mode": "버스", "line": "가상 A1", "minutes": 25, "fare": 1500, "last_bus": "22:30"},
- "복대동": {"mode": "버스", "line": "가상 B2", "minutes": 30, "fare": 1500, "last_bus": "22:00"},
- "개신동": {"mode": "도보", "line": "-", "minutes": 8, "fare": 0, "last_bus": "24:00"},
- "율량동": {"mode": "버스", "line": "가상 C3", "minutes": 35, "fare": 1500, "last_bus": "21:40"}
+ "개신동": {"walk_minutes": 8, "lit_ratio": 0.9, "cctv": 12, "busy_until": "02:00", "bus_line": "-", "bus_minutes": 5, "fare": 0, "last_bus": "-"},
+ "사창동": {"walk_minutes": 40, "lit_ratio": 0.6, "cctv": 5, "busy_until": "23:00", "bus_line": "가상 A1", "bus_minutes": 25, "fare": 1500, "last_bus": "22:30"},
+ "복대동": {"walk_minutes": 45, "lit_ratio": 0.7, "cctv": 8, "busy_until": "01:00", "bus_line": "가상 B2", "bus_minutes": 30, "fare": 1500, "last_bus": "22:00"},
+ "봉명동": {"walk_minutes": 25, "lit_ratio": 0.75, "cctv": 6, "busy_until": "24:00", "bus_line": "가상 D4", "bus_minutes": 15, "fare": 1500, "last_bus": "23:00"},
+ "율량동": {"walk_minutes": 60, "lit_ratio": 0.5, "cctv": 3, "busy_until": "22:00", "bus_line": "가상 C3", "bus_minutes": 35, "fare": 1500, "last_bus": "21:40"}
 }}

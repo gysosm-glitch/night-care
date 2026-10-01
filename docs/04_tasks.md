@@ -10,17 +10,17 @@ Prompt for your AI assistant (Part 2 only):
 
 ## Part 1 — Design (no code)
 - [x] **1. Brief.** `docs/01_brief.md`
-- [x] **2. Data.** `data/places.json`, `routes.json`, `taxi.json`, `visit_plans.json` (listed in `docs/02_architecture.md`)
+- [x] **2. Data.** `data/safe_spots.json`, `routes.json`, `taxi.json`, `escort.json` (listed in `docs/02_architecture.md`)
 - [x] **3. Tool map.** in `docs/03_tool_spec.md` + reskin test in `tests/scenarios.md`
-- [x] **4. Tool specs.** Owner A: find_open_places, get_route / Owner B: estimate_taxi_cost, book_visit_plan
+- [x] **4. Tool specs.** Owner A: find_safe_spots, get_route / Owner B: estimate_walk_risk, estimate_taxi_cost, request_escort
 - [x] **5. Scenarios.** `tests/scenarios.md` (A chain, B error recovery, C confirm)
 
 ## Part 2 — Build (one tool per prompt)
 - [x] **6. System prompt.** `prompts/system_prompt.md`
-- [x] **7. Tool 1:** `find_open_places` — `python -m pytest tests -k find_open`
+- [x] **7. Tool 1:** `find_safe_spots` — `python -m pytest tests -k spots`
 - [x] **8. Tool 2:** `get_route`
-- [x] **9. Tool 3:** `estimate_taxi_cost`
-- [x] **10. Tool 4:** `book_visit_plan`
+- [x] **9. Tool 3:** `estimate_walk_risk`, `estimate_taxi_cost`
+- [x] **10. Tool 4:** `request_escort`
 - [ ] **11. More tools (optional).**
 
 ## Part 3 — Verify

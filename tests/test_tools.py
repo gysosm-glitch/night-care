@@ -3,51 +3,57 @@ from src.tools.calculator import calculate
 
 
 def test_calculate_ok():
-    assert calculate("9900 - 1500")["result"] == 8400
+    assert calculate("9400 - 1500")["result"] == 7900
 
 
 def test_data_store_roundtrip():
     from src.tools import data_store
-    data = data_store.load("visit_plans")
-    data["plans"].append({"id": "X"})
-    data_store.save("visit_plans", data)
-    assert data_store.load("visit_plans")["plans"][-1]["id"] == "X"
+    data = data_store.load("escort")
+    data["requests"].append({"id": "X"})
+    data_store.save("escort", data)
+    assert data_store.load("escort")["requests"][-1]["id"] == "X"
 
 
-# ---- find_open_places ----
-def test_open_at_night_only_emergency():
-    from src.tools.place_tools import find_open_places
-    ids = {p["id"] for p in find_open_places("23:10", "내과")["places"]}
-    assert ids == {"C1"}
+def test_time_window_crosses_midnight():
+    from src.tools.timeutil import in_window, to_minutes
+    assert in_window(to_minutes("00:30"), "22:00", "01:00")
+    assert not in_window(to_minutes("01:00"), "22:00", "01:00")
+    assert in_window(to_minutes("12:00"), "00:00", "24:00")
 
 
-def test_open_daytime_includes_clinic():
-    from src.tools.place_tools import find_open_places
-    ids = {p["id"] for p in find_open_places("10:00", "내과")["places"]}
-    assert ids == {"C1", "C2"}
+# ---- find_safe_spots ----
+def test_spots_late_night_bongmyeong():
+    from src.tools.spot_tools import find_safe_spots
+    ids = {s["id"] for s in find_safe_spots("봉명동", "23:30")["spots"]}
+    assert ids == {"S7", "S8"}
 
 
-def test_pharmacy_open_until_midnight():
-    from src.tools.place_tools import find_open_places
-    ids = {p["id"] for p in find_open_places("23:30", "일반의약품")["places"]}
-    assert ids == {"C5", "C6"}
+def test_spots_safe_house_after_midnight():
+    from src.tools.spot_tools import find_safe_spots
+    assert {s["id"] for s in find_safe_spots("봉명동", "00:30")["spots"]} == {"S7", "S8"}
+    assert {s["id"] for s in find_safe_spots("봉명동", "01:30")["spots"]} == {"S7"}
 
 
-def test_unknown_subject_has_hint():
-    from src.tools.place_tools import find_open_places
-    assert "내과" in find_open_places("23:00", "치과")["error"]
+def test_spots_closed_safe_house_excluded():
+    from src.tools.spot_tools import find_safe_spots
+    assert {s["id"] for s in find_safe_spots("복대동", "23:30")["spots"]} == {"S5"}
 
 
-def test_bad_time():
-    from src.tools.place_tools import find_open_places
-    assert "error" in find_open_places("25:99", "내과")
+def test_spots_unknown_area_has_hint():
+    from src.tools.spot_tools import find_safe_spots
+    assert "사창동" in find_safe_spots("송정동", "23:00")["error"]
+
+
+def test_spots_bad_time():
+    from src.tools.spot_tools import find_safe_spots
+    assert "error" in find_safe_spots("개신동", "25:99")
 
 
 # ---- get_route ----
 def test_route_ok():
     from src.tools.route_tools import get_route
     r = get_route("사창동")
-    assert r["minutes"] == 25 and r["last_bus"] == "22:30"
+    assert r["walk_minutes"] == 40 and r["cctv"] == 5 and r["last_bus"] == "22:30"
 
 
 def test_route_last_bus_gone():
@@ -56,14 +62,45 @@ def test_route_last_bus_gone():
     assert get_route("사창동", "21:00")["bus_available_now"] is True
 
 
-def test_route_walk_always_available():
+def test_route_no_bus_in_gaesin():
     from src.tools.route_tools import get_route
-    assert get_route("개신동", "23:50")["bus_available_now"] is True
+    r = get_route("개신동", "23:50")
+    assert r["bus_line"] == "-" and r["bus_available_now"] is False
 
 
 def test_route_unknown_area():
     from src.tools.route_tools import get_route
     assert "사창동" in get_route("송정동")["error"]
+
+
+# ---- estimate_walk_risk ----
+def test_risk_high_sachang_night():
+    from src.tools.risk_tools import estimate_walk_risk
+    r = estimate_walk_risk("사창동", "23:10")
+    assert r["score"] == 82 and r["level"] == "높음"
+    assert "인적 드묾" in r["reasons"]
+
+
+def test_risk_medium_gaesin_night():
+    from src.tools.risk_tools import estimate_walk_risk
+    r = estimate_walk_risk("개신동", "23:10")
+    assert r["score"] == 43 and r["level"] == "보통"
+
+
+def test_risk_low_daytime():
+    from src.tools.risk_tools import estimate_walk_risk
+    r = estimate_walk_risk("개신동", "15:00")
+    assert r["score"] == 3 and r["level"] == "낮음"
+
+
+def test_risk_capped_at_100():
+    from src.tools.risk_tools import estimate_walk_risk
+    assert estimate_walk_risk("율량동", "02:00")["score"] <= 100
+
+
+def test_risk_unknown_area():
+    from src.tools.risk_tools import estimate_walk_risk
+    assert "Valid" in estimate_walk_risk("송정동", "23:00")["error"]
 
 
 # ---- estimate_taxi_cost ----
@@ -90,30 +127,40 @@ def test_taxi_bad_minutes():
     assert "error" in estimate_taxi_cost(0, "23:00")
 
 
-# ---- book_visit_plan ----
-def test_book_needs_confirmation():
+# ---- request_escort ----
+def test_escort_needs_confirmation():
     from src.tools import data_store
-    from src.tools.plan_tools import book_visit_plan
-    assert "error" in book_visit_plan("C3", "2026-10-02", "10:00", "인후통", False)
-    assert data_store.load("visit_plans")["plans"] == []
+    from src.tools.escort_tools import request_escort
+    assert "error" in request_escort("사창동", "2026-10-02", "23:00", "충북대 정문", False)
+    assert data_store.load("escort")["requests"] == []
 
 
-def test_book_ok_saves():
+def test_escort_ok_saves():
     from src.tools import data_store
-    from src.tools.plan_tools import book_visit_plan
-    r = book_visit_plan("C3", "2026-10-02", "10:00", "인후통", True)
-    assert r["saved"] is True and r["id"] == "P1"
-    assert len(data_store.load("visit_plans")["plans"]) == 1
+    from src.tools.escort_tools import request_escort
+    r = request_escort("사창동", "2026-10-02", "23:00", "충북대 정문", True)
+    assert r["saved"] is True and r["id"] == "E1"
+    assert len(data_store.load("escort")["requests"]) == 1
 
 
-def test_book_unknown_clinic():
-    from src.tools.plan_tools import book_visit_plan
-    assert "find_open_places" in book_visit_plan("X9", "2026-10-02", "10:00", "x", True)["error"]
+def test_escort_after_midnight_ok():
+    from src.tools.escort_tools import request_escort
+    assert request_escort("율량동", "2026-10-02", "00:30", "충북대 정문", True)["saved"] is True
 
 
-def test_book_closed_time():
-    from src.tools.plan_tools import book_visit_plan
-    assert "closed" in book_visit_plan("C3", "2026-10-02", "22:00", "x", True)["error"]
+def test_escort_outside_service_hours():
+    from src.tools.escort_tools import request_escort
+    assert "22:00-01:00" in request_escort("사창동", "2026-10-02", "20:00", "충북대 정문", True)["error"]
+
+
+def test_escort_bad_date():
+    from src.tools.escort_tools import request_escort
+    assert "error" in request_escort("사창동", "내일", "23:00", "충북대 정문", True)
+
+
+def test_escort_unknown_area():
+    from src.tools.escort_tools import request_escort
+    assert "Valid" in request_escort("송정동", "2026-10-02", "23:00", "충북대 정문", True)["error"]
 
 
 # ---- Registry ----
