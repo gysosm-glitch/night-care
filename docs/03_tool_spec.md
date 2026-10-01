@@ -64,7 +64,8 @@ Write the spec BEFORE implementing a tool. The "Purpose" line becomes the tool d
 - Purpose: Save a 안심귀가 escort request. Only call with confirmed=true after the user has explicitly agreed.
 - Type: write
 - Parameters: area (string, required) — destination district; date (string, required) — YYYY-MM-DD; time (string, required) — meeting HH:MM; meet_point (string, required) — where to meet, e.g. "충북대 정문"; confirmed (boolean, required)
-- Returns: `{"saved": true, "id": "E1", "area": "사창동", "date": "2026-10-02", "time": "23:00", "meet_point": "충북대 정문", "verify": "만나면 요원이 먼저 신청 번호 E1을 말하는지 확인하고, 요원의 사진 신분증(얼굴·이름)을 보여 달라고 하세요. 2인 1조가 아니면 따라가지 마세요."}`
+- Returns: `{"saved": true, "id": "E1", "area": "사창동", "date": "2026-10-02", "time": "23:00", "meet_point": "충북대 정문", "police": {"name": "사창 지구대", "phone": "043-251-1703", "address": "충북 청주시 서원구 1순환로 690"}, "police_note": "실제 서비스라면 신청 내용이 관할 지구대에 공유됩니다. (데모라 실제로 전달되지 않음)", "verify": "만나면 요원이 먼저 신청 번호 E1을 말하는지 확인하고, 요원의 사진 신분증(얼굴·이름)을 보여 달라고 하세요. 2인 1조가 아니거나 의심되면 따라가지 말고 112 또는 관할 사창 지구대(043-251-1703)에 연락하세요. 실제 서비스라면 신청 내용이 관할 지구대에 공유됩니다. (데모라 실제로 전달되지 않음)"}`
+  - **Police link:** `police` is the real 지구대·파출소 of the destination district (from `data/safe_spots.json`); its id is saved with the request as `police_id`. If the district has none in the data (개신동), `police` is null and `police_note` says to use 112.
 - Service hours: 22:00–01:00 (from `data/escort.json`)
 - Errors:
   - confirmed=false → `{"error": "User has not confirmed. Summarize the request and ask the user to confirm first."}`

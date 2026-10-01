@@ -150,6 +150,9 @@ def test_escort_ok_saves():
     r = request_escort("사창동", "2026-10-02", "23:00", "충북대 정문", True)
     assert r["saved"] is True and r["id"] == "E1"
     assert "E1" in r["verify"] and "신분증" in r["verify"]
+    assert r["police"] == {"name": "사창 지구대", "phone": "043-251-1703", "address": "충북 청주시 서원구 1순환로 690"}
+    assert "데모" in r["police_note"] and "사창 지구대(043-251-1703)" in r["verify"]
+    assert data_store.load("escort")["requests"][0]["police_id"] == "S3"
     assert len(data_store.load("escort")["requests"]) == 1
 
 
@@ -168,11 +171,18 @@ def test_escort_bad_date():
     assert "error" in request_escort("사창동", "내일", "23:00", "충북대 정문", True)
 
 
+def test_escort_without_police_in_data_points_to_112():
+    from src.tools.escort_tools import request_escort
+    r = request_escort("개신동", "2026-10-02", "23:00", "충북대 정문", True)
+    assert r["police"] is None and "112" in r["police_note"]
+
+
 def test_escort_info_lists_criteria_and_checks():
     from src.tools.escort_tools import get_escort_info
     r = get_escort_info()
     assert r["hours"] == "22:00-01:00" and "예시" in r["note"]
     assert any("경력 조회" in c for c in r["staff_criteria"])
+    assert any("지구대" in c for c in r["staff_criteria"])
     assert any("신청 번호" in c for c in r["check_on_meet"])
 
 

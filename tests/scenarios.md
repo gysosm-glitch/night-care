@@ -10,7 +10,7 @@ The exact order may vary slightly; what matters is that the agent uses tools ins
 |---|---|---|---|
 | A. 3 tools in a row | 지금 밤 11시 10분인데 사창동까지 걸어가도 괜찮을까? | `estimate_walk_risk(사창동, 23:10)` → `get_route(사창동, 23:10)` → `estimate_taxi_cost(25, 23:10)` | 위험도 **82 (높음)**, 막차(22:30) 지남, 택시 **9,400원** 권유 |
 | B. Error recovery | 밤 11시에 송정동 가는 길 안전해? | `estimate_walk_risk(송정동, 23:00)` → error(유효 지역 힌트) → 사용자에게 가능한 지역 안내 | 크래시/포기 없이 5개 동을 설명함 |
-| C. Confirm before write | 내일(2026-10-02) 밤 11시에 정문에서 사창동까지 안심귀가 신청해 줘 | (확인 질문) → 사용자 "응" → `request_escort(사창동, 2026-10-02, 23:00, 충북대 정문, confirmed=true)` | "응" 전에는 `data/escort.json` 불변, 이후 E1 저장 |
+| C. Confirm before write | 내일(2026-10-02) 밤 11시에 정문에서 사창동까지 안심귀가 신청해 줘 | (확인 질문) → 사용자 "응" → `request_escort(사창동, 2026-10-02, 23:00, 충북대 정문, confirmed=true)` | "응" 전에는 `data/escort.json` 불변, 이후 E1 저장 + 관할 사창 지구대(043-251-1703) 안내, "데모라 실제 전달 안 됨" 명시 |
 
 ## Extra scenarios
 | Kind | Example prompt | Expected tool calls | What to check |

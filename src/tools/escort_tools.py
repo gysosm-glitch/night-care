@@ -14,6 +14,14 @@ def _valid_date(text: str) -> bool:
         return False
 
 
+def _police_for(area: str) -> dict | None:
+    """Return the real 지구대·파출소 that covers a district, or None if the data has none."""
+    for s in data_store.load("safe_spots")["spots"]:
+        if s["area"] == area and s["type"] in ("지구대", "파출소"):
+            return {"id": s["id"], "name": s["name"], "phone": s["phone"], "address": s["address"]}
+    return None
+
+
 def request_escort(area: str, date: str, time: str, meet_point: str, confirmed: bool) -> dict:
     """Save a 안심귀가 escort request. Only call with confirmed=true after the user has explicitly agreed."""
     if not confirmed:
@@ -28,12 +36,17 @@ def request_escort(area: str, date: str, time: str, meet_point: str, confirmed: 
     s = data["service"]
     if not in_window(now, s["start"], s["end"]):
         return {"error": f"Escort runs {s['start']}-{s['end']} only. Pick a time in that window or suggest a taxi."}
+    police = _police_for(area)
     req = {"id": f"E{len(data['requests']) + 1}", "area": area, "date": date, "time": time, "meet_point": meet_point}
-    data["requests"].append(req)
+    data["requests"].append({**req, "police_id": police["id"] if police else None})
     data_store.save("escort", data)
+    note = ("실제 서비스라면 신청 내용이 관할 지구대에 공유됩니다. (데모라 실제로 전달되지 않음)" if police
+            else "이 동네 관할 지구대는 데이터에 없어요. 의심되면 112에 연락하세요.")
+    contact = f"112 또는 관할 {police['name']}({police['phone']})" if police else "112"
     verify = (f"만나면 요원이 먼저 신청 번호 {req['id']}을 말하는지 확인하고, 요원의 사진 신분증(얼굴·이름)을 보여 달라고 하세요. "
-              "2인 1조가 아니면 따라가지 마세요.")
-    return {"saved": True, **req, "verify": verify}
+              f"2인 1조가 아니거나 의심되면 따라가지 말고 {contact}에 연락하세요. {note}")
+    linked = {k: police[k] for k in ("name", "phone", "address")} if police else None
+    return {"saved": True, **req, "police": linked, "police_note": note, "verify": verify}
 
 
 def get_escort_info() -> dict:

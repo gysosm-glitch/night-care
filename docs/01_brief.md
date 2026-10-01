@@ -26,6 +26,7 @@ A 충북대 student living alone near campus (개신동/사창동/복대동/봉�
 - **Emergency mode** (`get_emergency_guide`): steps, nearest police box, and a ready-to-send 112 text message
 - **Trip home + arrival check** (`start_trip`, `check_arrival`): ETA, a message for a guardian, overdue warning
 - Save a **안심귀가 escort request** (only after the user confirms; only 22:00–01:00), with a tip to verify the escort on meeting
+- **Police-linked escort:** each request is linked to the real 지구대 of the destination (name, phone); the demo says clearly that nothing is actually sent to the police
 - **Escort transparency** (`get_escort_info`): how escort staff are chosen (background check, training, 2-person team, photo ID) and what to check when meeting
 - Calculate comparisons (e.g. bus vs taxi)
 - App sidebar: one-tap 112 call/text, nearby police boxes, user guide
