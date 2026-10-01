@@ -1,0 +1,6 @@
+{"origin": "충북대 정문", "routes": {
+ "사창동": {"mode": "버스", "line": "가상 A1", "minutes": 25, "fare": 1500, "last_bus": "22:30"},
+ "복대동": {"mode": "버스", "line": "가상 B2", "minutes": 30, "fare": 1500, "last_bus": "22:00"},
+ "개신동": {"mode": "도보", "line": "-", "minutes": 8, "fare": 0, "last_bus": "24:00"},
+ "율량동": {"mode": "버스", "line": "가상 C3", "minutes": 35, "fare": 1500, "last_bus": "21:40"}
+}}
