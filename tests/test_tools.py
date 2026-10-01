@@ -149,6 +149,7 @@ def test_escort_ok_saves():
     from src.tools.escort_tools import request_escort
     r = request_escort("사창동", "2026-10-02", "23:00", "충북대 정문", True)
     assert r["saved"] is True and r["id"] == "E1"
+    assert "E1" in r["verify"] and "신분증" in r["verify"]
     assert len(data_store.load("escort")["requests"]) == 1
 
 
@@ -165,6 +166,14 @@ def test_escort_outside_service_hours():
 def test_escort_bad_date():
     from src.tools.escort_tools import request_escort
     assert "error" in request_escort("사창동", "내일", "23:00", "충북대 정문", True)
+
+
+def test_escort_info_lists_criteria_and_checks():
+    from src.tools.escort_tools import get_escort_info
+    r = get_escort_info()
+    assert r["hours"] == "22:00-01:00" and "예시" in r["note"]
+    assert any("경력 조회" in c for c in r["staff_criteria"])
+    assert any("신청 번호" in c for c in r["check_on_meet"])
 
 
 def test_escort_unknown_area():

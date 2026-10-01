@@ -64,7 +64,7 @@ Write the spec BEFORE implementing a tool. The "Purpose" line becomes the tool d
 - Purpose: Save a 안심귀가 escort request. Only call with confirmed=true after the user has explicitly agreed.
 - Type: write
 - Parameters: area (string, required) — destination district; date (string, required) — YYYY-MM-DD; time (string, required) — meeting HH:MM; meet_point (string, required) — where to meet, e.g. "충북대 정문"; confirmed (boolean, required)
-- Returns: `{"saved": true, "id": "E1", "area": "사창동", "date": "2026-10-02", "time": "23:00", "meet_point": "충북대 정문"}`
+- Returns: `{"saved": true, "id": "E1", "area": "사창동", "date": "2026-10-02", "time": "23:00", "meet_point": "충북대 정문", "verify": "만나면 요원이 먼저 신청 번호 E1을 말하는지 확인하고, 요원의 사진 신분증(얼굴·이름)을 보여 달라고 하세요. 2인 1조가 아니면 따라가지 마세요."}`
 - Service hours: 22:00–01:00 (from `data/escort.json`)
 - Errors:
   - confirmed=false → `{"error": "User has not confirmed. Summarize the request and ask the user to confirm first."}`
@@ -72,6 +72,17 @@ Write the spec BEFORE implementing a tool. The "Purpose" line becomes the tool d
   - outside service hours → `{"error": "Escort runs 22:00-01:00 only. Pick a time in that window or suggest a taxi."}`
   - bad date/time → `{"error": "Invalid date/time. Use YYYY-MM-DD and HH:MM."}`
 - Example request: "내일 밤 11시에 정문에서 사창동까지 안심귀가 신청해 줘."
+
+## Tool: get_escort_info
+- Owner: 멤버 B
+- File: src/tools/escort_tools.py
+- Purpose: Get how 안심귀가 escort staff are chosen and how to check the escort's identity when you meet.
+- Type: read
+- Parameters: (none)
+- Returns: `{"note": "데모 서비스 기준(예시)", "hours": "22:00-01:00", "staff_criteria": ["성범죄·강력범죄 경력 조회를 통과한 사람만 선발", ...], "check_on_meet": ["요원이 먼저 신청 번호(예: E1)를 말하는지 확인", ...]}`
+  - From `data/escort.json` → `service`. The service is demo data, so `note` says these are example rules.
+- Errors: none expected (reads a local file).
+- Example request: "안심귀가 하면 어떤 사람이 와? 믿을 수 있어?"
 
 ## Tool: get_emergency_guide
 - Owner: 멤버 A

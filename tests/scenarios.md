@@ -21,6 +21,7 @@ The exact order may vary slightly; what matters is that the agent uses tools ins
 | H. Emergency | 지금 23:30이고 사창동인데 누가 따라오는 것 같아 | `get_emergency_guide(사창동, 23:30)` only (no risk analysis) | 첫 줄 "112에 전화", 사창 지구대 전화·주소, 112 문자 문구 |
 | I. Trip + arrival | 지금 23:10인데 택시로 사창동 갈게. 기록해 줘 → "응" → "23:33 도착했어" | (확인) → `start_trip(사창동, 23:10, 택시, true)` → `check_arrival(T1, 23:33, true)` | ETA 23:35, 보호자 메시지, 도착 처리 |
 | J. Overdue | (I 이후 도착 안 함) 00:00인데 아직 가는 중 | `check_arrival(T1, 00:00, false)` | overdue(25분 늦음) → 안전 확인 + 보호자 연락/112 권유 |
+| K. Escort trust | 안심귀가 하면 어떤 사람이 와? 믿을 수 있어? | `get_escort_info()` | 선발 기준 + 만날 때 확인법, "데모 예시"라고 밝힘 (운영 중이라고 지어내지 않음) |
 | G. Low risk | 오후 3시에 개신동 걸어가도 돼? | `estimate_walk_risk(개신동, 15:00)` | 낮음, 걸어가도 됨 (도보 8분) |
 
 > After testing C/F/I/J, reset `data/escort.json` requests to `[]` and `data/trips.json` to `{"trips": []}`.
@@ -32,6 +33,7 @@ The exact order may vary slightly; what matters is that the agent uses tools ins
 | get_route (lights/CCTV) | how lit is the way to a croissant? | nonsense |
 | estimate_walk_risk | risk score of walking to a coffee? | nonsense |
 | estimate_taxi_cost | taxi fare for a coffee? | nonsense |
+| get_escort_info | how are baristas background-checked to walk you home? | nonsense |
 | request_escort | record_sale? | different logic (confirm + 운영시간 검사) |
 | get_emergency_guide | what to text 112 about a latte? | nonsense |
 | start_trip / check_arrival | did the coffee get home safely? | nonsense |
