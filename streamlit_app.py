@@ -20,9 +20,9 @@ except Exception:
 
 EXAMPLES = [
     "지금 밤 11시 10분인데 사창동까지 걸어가도 괜찮을까?",
-    "밤 11시 반에 봉명동 가는데 들를 수 있는 안전한 곳 있어?",
-    "밤 11시에 사창동 가는 택시비랑 버스비 차이 알려줘",
-    "내일 밤 11시에 충북대 정문에서 사창동까지 안심귀가 신청해 줘",
+    "밤 11시 반에 봉명동 근처 지구대 어디 있어?",
+    "지금 23:10인데 택시로 사창동 집에 갈게. 귀가 기록해 줘",
+    "사창동인데 누가 따라오는 것 같아 무서워",
 ]
 
 GUIDE_PATH = Path(__file__).parent / "USER_GUIDE.md"
@@ -41,36 +41,41 @@ def guide_sections() -> list:
     return sections
 
 
-SPOT_ICONS = {"지구대": "🚓", "파출소": "🚓", "24시 편의점": "🏪", "안심지킴이집": "🏠"}
+SPOT_ICONS = {"지구대": "🚓", "파출소": "🚓"}
+
+
+def show_emergency() -> None:
+    """Sidebar: one-tap 112 call and text buttons, always at the top."""
+    st.error("🚨 **위급하면 바로 112**")
+    call, text = st.columns(2)
+    call.link_button("📞 112 전화", "tel:112", use_container_width=True)
+    text.link_button("💬 112 문자", "sms:112", use_container_width=True)
+    st.caption("말하기 어려우면 문자로 동네·큰 건물 위치를 보내세요.")
 
 
 def show_safe_spots() -> None:
-    """Sidebar panel: pick a district and see safe spots open now, without asking the agent."""
+    """Sidebar panel: pick a district and see real police boxes open now, without asking the agent."""
     from src.tools import data_store
     from src.tools.spot_tools import find_safe_spots
 
-    st.header("🚓 근처 안심구역")
+    st.header("🚓 근처 지구대")
     area = st.selectbox("동네", list(data_store.load("routes")["routes"]))
     now = datetime.now(ZoneInfo("Asia/Seoul")).time().replace(second=0, microsecond=0)
     when = st.time_input("시각 (기본: 지금)", value=now, step=600)
     result = find_safe_spots(area, when.strftime("%H:%M"))
     for s in result.get("spots", []):
         line = f"{SPOT_ICONS.get(s['type'], '📍')} **{s['name']}** · {s['open_until']}까지"
-        if s.get("source") == "가상":
-            line += " · _(가상)_"
         if s.get("phone"):
             line += f"  \n📞 [{s['phone']}](tel:{s['phone']}) · {s['address']}"
         st.markdown(line)
     if not result.get("spots"):
-        st.error("지금 열린 안심구역이 없어요. 위급하면 바로 **112**에 신고하세요.")
-    elif not any(s.get("source") == "공공데이터" for s in result["spots"]):
         st.info("이 동네 지구대·파출소는 공공데이터에 없어요. 다른 동네를 골라 가까운 지구대를 확인하세요.")
-    st.caption("🚨 위급하면 112 전화 · 문자 신고도 112로  \n"
-               "지구대: 공공데이터포털(충북경찰청, 2026-08-03) · 편의점·지킴이집: 가상 데이터")
+    st.caption("출처: 공공데이터포털 충북경찰청 지구대·파출소 현황 (2026-08-03)")
     st.divider()
 
 
 with st.sidebar:
+    show_emergency()
     show_safe_spots()
     st.header("📖 사용 설명서")
     st.caption("궁금한 항목을 눌러 펼쳐 보세요.")
@@ -84,6 +89,6 @@ with st.sidebar:
     if st.button("🔄 대화 새로 시작", use_container_width=True):
         st.session_state.clear()
         st.rerun()
-    st.warning("모든 정보는 데모용 **가상 데이터**예요. 위급하면 바로 **112**에 신고하세요.")
+    st.caption("지구대 정보만 실제 공공데이터이고, 길·위험도·요금·안심귀가는 수업용 가상 데이터예요.")
 
 runpy.run_path(str(Path(__file__).parent / "src" / "app.py"), run_name="__main__")

@@ -1,4 +1,4 @@
-"""find_safe_spots: police boxes, 24-hour stores and 안심지킴이집 open right now."""
+"""find_safe_spots: real public safety places (police boxes, ...) open right now."""
 from src.tools import data_store
 from src.tools.timeutil import in_window, to_minutes
 
@@ -6,7 +6,7 @@ TIME_ERROR = "Invalid time. Use 24-hour HH:MM, e.g. '23:10'."
 
 
 def find_safe_spots(area: str, time: str) -> dict:
-    """Find safe spots (police boxes, 24-hour convenience stores, 안심지킴이집) open at a given time in a district."""
+    """Find real public safety places (police boxes and other facilities) open at a given time in a district, with phone and address."""
     areas = list(data_store.load("routes")["routes"])
     if area not in areas:
         return {"error": f"Unknown area '{area}'. Valid: {', '.join(areas)}."}
@@ -29,7 +29,7 @@ FIND_SAFE_SPOTS_SCHEMA = {
     "type": "function",
     "function": {
         "name": "find_safe_spots",
-        "description": "Find safe spots (police boxes, 24-hour convenience stores, 안심지킴이집) open at a given time in a district.",
+        "description": "Find real public safety places (police boxes and other facilities) open at a given time in a district, with phone and address.",
         "parameters": {
             "type": "object",
             "properties": {

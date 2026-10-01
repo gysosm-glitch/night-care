@@ -4,7 +4,7 @@ import streamlit as st
 from src.agent import NightCareAgent
 
 st.title("🌙 청주 밤길 안심 귀가 에이전트")
-st.caption("충북대생을 위한 밤길 위험도 · 안전한 장소 · 막차/택시 · 안심귀가 신청 도우미 (가상 데이터)")
+st.caption("충북대생을 위한 밤길 위험도 · 근처 지구대 · 막차/택시 · 귀가 기록 · 위급 안내 도우미")
 
 if "agent" not in st.session_state:
     st.session_state.agent = NightCareAgent()

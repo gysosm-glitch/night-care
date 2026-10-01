@@ -22,34 +22,23 @@ def test_time_window_crosses_midnight():
 
 
 # ---- find_safe_spots ----
-def test_spots_late_night_bongmyeong():
+def test_spots_real_police_only():
     from src.tools.spot_tools import find_safe_spots
-    ids = {s["id"] for s in find_safe_spots("봉명동", "23:30")["spots"]}
-    assert ids == {"S7", "S8", "S11"}
-
-
-def test_spots_safe_house_after_midnight():
-    from src.tools.spot_tools import find_safe_spots
-    assert {s["id"] for s in find_safe_spots("봉명동", "00:30")["spots"]} == {"S7", "S8", "S11"}
-    assert {s["id"] for s in find_safe_spots("봉명동", "01:30")["spots"]} == {"S7", "S11"}
-
-
-def test_spots_closed_safe_house_excluded():
-    from src.tools.spot_tools import find_safe_spots
-    assert {s["id"] for s in find_safe_spots("복대동", "23:30")["spots"]} == {"S5"}
+    spots = find_safe_spots("봉명동", "23:30")["spots"]
+    assert [s["id"] for s in spots] == ["S11"]
+    assert all(s["source"] == "공공데이터" for s in spots)
 
 
 def test_spots_real_police_has_phone_and_address():
     from src.tools.spot_tools import find_safe_spots
-    police = next(s for s in find_safe_spots("사창동", "23:00")["spots"] if s["type"] == "지구대")
-    assert police["source"] == "공공데이터"
+    police = find_safe_spots("사창동", "23:00")["spots"][0]
     assert police["phone"] == "043-251-1703" and "1순환로 690" in police["address"]
 
 
-def test_spots_fake_spot_has_no_phone():
+def test_spots_none_in_gaesin_has_hint():
     from src.tools.spot_tools import find_safe_spots
-    store = find_safe_spots("개신동", "23:00")["spots"][0]
-    assert store["source"] == "가상" and "phone" not in store
+    r = find_safe_spots("개신동", "23:00")
+    assert r["spots"] == [] and "112" in r["hint"]
 
 
 def test_spots_unknown_area_has_hint():
@@ -174,6 +163,75 @@ def test_escort_bad_date():
 def test_escort_unknown_area():
     from src.tools.escort_tools import request_escort
     assert "Valid" in request_escort("송정동", "2026-10-02", "23:00", "충북대 정문", True)["error"]
+
+
+# ---- get_emergency_guide ----
+def test_emergency_has_112_sms_and_police():
+    from src.tools.emergency_tools import get_emergency_guide
+    r = get_emergency_guide("사창동", "23:30")
+    assert r["call"] == "112" and r["spots"][0]["phone"] == "043-251-1703"
+    assert "사창동" in r["sms_112"] and "23:30" in r["sms_112"]
+
+
+def test_emergency_custom_situation():
+    from src.tools.emergency_tools import get_emergency_guide
+    assert "술 취한 사람" in get_emergency_guide("개신동", "00:10", "술 취한 사람이 시비를 걸어요")["sms_112"]
+
+
+def test_emergency_unknown_area_still_says_112():
+    from src.tools.emergency_tools import get_emergency_guide
+    assert "112" in get_emergency_guide("송정동", "23:00")["error"]
+
+
+# ---- start_trip / check_arrival ----
+def test_trip_needs_confirmation():
+    from src.tools import data_store
+    from src.tools.trip_tools import start_trip
+    assert "error" in start_trip("사창동", "23:10", "택시", False)
+    assert data_store.load("trips")["trips"] == []
+
+
+def test_trip_taxi_eta_and_message():
+    from src.tools.trip_tools import start_trip
+    r = start_trip("사창동", "23:10", "택시", True)
+    assert r["id"] == "T1" and r["eta"] == "23:35"
+    assert "23:45까지" in r["guardian_message"]
+
+
+def test_trip_walk_eta_wraps_midnight():
+    from src.tools.trip_tools import start_trip
+    assert start_trip("율량동", "23:30", "도보", True)["eta"] == "00:30"
+
+
+def test_trip_bus_after_last_bus():
+    from src.tools.trip_tools import start_trip
+    assert "last bus 22:30" in start_trip("사창동", "23:10", "버스", True)["error"]
+
+
+def test_trip_bad_mode():
+    from src.tools.trip_tools import start_trip
+    assert "도보" in start_trip("사창동", "23:10", "자전거", True)["error"]
+
+
+def test_arrival_marks_done():
+    from src.tools import data_store
+    from src.tools.trip_tools import check_arrival, start_trip
+    start_trip("사창동", "23:10", "택시", True)
+    assert check_arrival("T1", "23:30", True)["status"] == "arrived"
+    assert data_store.load("trips")["trips"][0]["status"] == "arrived"
+
+
+def test_arrival_on_the_way_and_overdue():
+    from src.tools.trip_tools import check_arrival, start_trip
+    start_trip("사창동", "23:50", "택시", True)  # eta 00:15
+    assert check_arrival("T1", "00:05", False)["minutes_left"] == 10
+    r = check_arrival("T1", "00:30", False)
+    assert r["status"] == "overdue" and r["minutes_late"] == 15
+
+
+def test_arrival_unknown_trip():
+    from src.tools.trip_tools import check_arrival
+    assert "start_trip" in check_arrival("T9", "23:00", True)["error"]
 
 
 # ---- Registry ----

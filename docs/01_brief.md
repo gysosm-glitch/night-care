@@ -17,30 +17,32 @@ A 충북대 student living alone near campus (개신동/사창동/복대동/봉�
 
 ## What the assistant can do
 ### v1 — built
-- Find **safe spots open right now** in a district (지구대·파출소, 24시 편의점, 안심지킴이집)
+- Find **real police boxes open right now** in a district, with phone and address (공공데이터포털)
 - Show the way from 충북대 정문: walking minutes, streetlight ratio, CCTV count, bus line and last bus
 - **Score the walking risk (0–100)** for a district at a given time, with reasons
 - Estimate a taxi fare including the 22:00–04:00 night surcharge
+- **Emergency mode** (`get_emergency_guide`): steps, nearest police box, and a ready-to-send 112 text message
+- **Trip home + arrival check** (`start_trip`, `check_arrival`): ETA, a message for a guardian, overdue warning
 - Save a **안심귀가 escort request** (only after the user confirms; only 22:00–01:00)
 - Calculate comparisons (e.g. bus vs taxi)
+- App sidebar: one-tap 112 call/text, nearby police boxes, user guide
 
 ### v2 — planned (in priority order)
-1. **Recommend, don't just report.** System prompt rule: every "how do I get home" answer ends with one choice (walk / bus / taxi / escort) based on risk level and `bus_available_now`.
-2. **Emergency mode.** If the user says they feel followed, threatened, or scared, skip the risk analysis: tell them to call 112 and give the single nearest open safe spot (`find_safe_spots`).
+1. **Recommend, don't just report.** Every "how do I get home" answer ends with one choice (walk / bus / taxi / escort). (Prompt rule added; keep checking it.)
+2. **More real facilities.** Emergency rooms, 119 safety centers, emergency bells from 공공데이터포털; fill 개신동's missing police box.
 3. **No need to type the time.** `get_current_time` tool — the user can say "지금" instead of "23:10".
-4. **Safe-arrival check-in.** `start_trip` saves "leaving now, expected arrival HH:MM" (write, confirm first); `check_arrival` marks the trip done or, if overdue, suggests contacting a friend or 112.
-5. **More starting points.** `origin` parameter: 정문, 중문, 후문 (each with its own routes).
-6. **Manage escort requests.** `list_escort_requests` and `cancel_escort` (write, confirm first).
-7. **Richer risk score.** Add weekend and (fake) weather — rain lowers visibility and foot traffic.
+4. **More starting points.** `origin` parameter: 정문, 중문, 후문 (each with its own routes).
+5. **Manage escort requests.** `list_escort_requests` and `cancel_escort` (write, confirm first).
+6. **Richer risk score.** Add weekend and (fake) weather — rain lowers visibility and foot traffic.
 
 ## Out of scope
 - Real APIs (경찰청, 공공데이터, bus, map), real-time GPS tracking, calling 112 or messaging friends for the user, payments, multiple users / login
-- 지구대·파출소 come from 공공데이터포털 (충북경찰청, 2026-08-03), converted once into `data/safe_spots.json`. Everything else (stores, 안심지킴이집, routes, CCTV, fares) is fake demo data. No live API calls.
+- 지구대·파출소 come from 공공데이터포털 (충북경찰청, 2026-08-03), converted once into `data/safe_spots.json`. Routes, risk inputs, fares and the escort service are fake demo data. No fake places are shown. No live API calls.
 - The assistant never says a route is "100% safe" and never replaces 112.
 
 ## Why this is not a café agent (rename test)
 Rename `estimate_walk_risk` → "how risky is it to walk to the latte?" and `find_safe_spots` → "which police box sells croissants?": both are nonsense for a café.
-A café owner never needs "is it dark and empty at 23:30", "is a police box open nearby", "book someone to walk me home", or "did she get home yet?" (`check_arrival`).
+A café owner never needs "is it dark and empty at 23:30", "is a police box open nearby", "what do I text 112" (`get_emergency_guide`), or "did they get home yet?" (`check_arrival`).
 
 ## Success criteria
 - **No guessing:** every time, risk score, fare, and place comes from a tool.
@@ -48,5 +50,5 @@ A café owner never needs "is it dark and empty at 23:30", "is a police box open
 - **Chaining:** answers that need 3 tools in a row work (risk → route → taxi).
 - **Emergency:** a "따라오는 것 같아" message gets 112 + one open safe spot in the **first line**, with at most one tool call.
 - **Recovery:** tool errors (unknown district, escort outside 22:00–01:00) lead to a retry or a clear question, never a crash.
-- **Safe writes:** nothing is saved before the user says yes (`request_escort`, v2 `start_trip`, `cancel_escort`).
+- **Safe writes:** nothing is saved before the user says yes (`request_escort`, `start_trip`; v2 `cancel_escort`).
 - **Short:** answers fit on one phone screen (about 5 lines or fewer, plus a list if needed).

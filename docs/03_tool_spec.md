@@ -9,11 +9,11 @@ Write the spec BEFORE implementing a tool. The "Purpose" line becomes the tool d
 ## Tool: find_safe_spots
 - Owner: 멤버 A
 - File: src/tools/spot_tools.py
-- Purpose: Find safe spots (police boxes, 24-hour convenience stores, 안심지킴이집) open at a given time in a district.
+- Purpose: Find real public safety places (police boxes and other facilities) open at a given time in a district, with phone and address.
 - Type: read
 - Parameters: area (string, required) — district name; time (string, required) — 24-hour HH:MM
-- Returns: `{"area": "봉명동", "time": "23:30", "spots": [{"id": "S11", "name": "봉명 지구대", "type": "지구대", "address": "충북 청주시 흥덕구 송절로64번길 13", "phone": "043-270-3705", "source": "공공데이터", "open_until": "24:00"}, {"id": "S7", "name": "가상 봉명 24시 편의점", "type": "24시 편의점", "source": "가상", "open_until": "24:00"}]}`
-  - `address` and `phone` appear only for spots that have them (real 지구대·파출소 from 공공데이터포털). `source` is `"공공데이터"` or `"가상"`.
+- Returns: `{"area": "봉명동", "time": "23:30", "spots": [{"id": "S11", "name": "봉명 지구대", "type": "지구대", "address": "충북 청주시 흥덕구 송절로64번길 13", "phone": "043-270-3705", "source": "공공데이터", "open_until": "24:00"}]}`
+  - Only real data from 공공데이터포털 (no fake places). 개신동 currently has none.
   - If nothing is open: `"spots": []` plus `"hint": "No safe spot open now. Call 112 in an emergency."`
 - Errors: unknown area → `{"error": "Unknown area '송정동'. Valid: 개신동, 사창동, 복대동, 봉명동, 율량동."}`; bad time → `{"error": "Invalid time. Use 24-hour HH:MM, e.g. '23:10'."}`
 - Example request: "봉명동 가는 길에 지금 들어갈 수 있는 안전한 곳 있어?"
@@ -72,6 +72,46 @@ Write the spec BEFORE implementing a tool. The "Purpose" line becomes the tool d
   - outside service hours → `{"error": "Escort runs 22:00-01:00 only. Pick a time in that window or suggest a taxi."}`
   - bad date/time → `{"error": "Invalid date/time. Use YYYY-MM-DD and HH:MM."}`
 - Example request: "내일 밤 11시에 정문에서 사창동까지 안심귀가 신청해 줘."
+
+## Tool: get_emergency_guide
+- Owner: 멤버 A
+- File: src/tools/emergency_tools.py
+- Purpose: Get what to do right now in an emergency: short steps, open safe places in the district, and a ready-to-send 112 text message.
+- Type: read
+- Parameters: area (string, required) — district the user is in or near; time (string, required) — HH:MM; situation (string, optional) — short description, default "누군가 따라오는 것 같아요"
+- Returns: `{"call": "112", "steps": ["밝고 사람 많은 큰길·가게로 이동하세요.", "112에 전화하세요. 말하기 어려우면 112로 문자 신고하세요.", "아래 지구대가 가까우면 들어가세요."], "spots": [{"name": "사창 지구대", "phone": "043-251-1703", "address": "..."}], "sms_112": "[긴급] 청주시 사창동 부근, 23:30. 누군가 따라오는 것 같아요. 도와주세요."}`
+  - `spots`: at most 2, from find_safe_spots. Empty list if none.
+- Errors: unknown area → `{"error": "Unknown area ... Call 112 now and say where you are."}`; bad time → `{"error": "Invalid time. ..."}`
+- Example request: "사창동인데 누가 따라오는 것 같아 무서워"
+
+## Tool: start_trip
+- Owner: 멤버 B
+- File: src/tools/trip_tools.py
+- Purpose: Save a trip home from 충북대 정문 and compute the expected arrival time and a message for a guardian. Only call with confirmed=true after the user has explicitly agreed.
+- Type: write
+- Parameters: area (string, required) — destination district; time (string, required) — departure HH:MM; mode (string, required) — 도보, 버스, or 택시; confirmed (boolean, required)
+- Returns: `{"saved": true, "id": "T1", "area": "사창동", "mode": "택시", "depart": "23:10", "eta": "23:35", "guardian_message": "나 23:10에 충북대 정문에서 출발해서 사창동으로 택시 타고 가는 중이야. 23:35쯤 도착 예정. 23:45까지 연락 없으면 전화해 줘!"}`
+- Minutes: 도보 → `walk_minutes`, 버스·택시 → `bus_minutes` (from `data/routes.json`). ETA wraps past midnight.
+- Errors:
+  - confirmed=false → `{"error": "User has not confirmed. Summarize the trip and ask the user to confirm first."}`
+  - unknown area / bad time → same hints as get_route
+  - bad mode → `{"error": "Unknown mode '자전거'. Use 도보, 버스, or 택시."}`
+  - bus after last bus or no bus line → `{"error": "No bus to 사창동 now (last bus 22:30). Use 도보 or 택시."}`
+- Example request: "지금 23:10인데 택시로 사창동 출발할게. 기록해 줘"
+
+## Tool: check_arrival
+- Owner: 멤버 B
+- File: src/tools/trip_tools.py
+- Purpose: Mark a saved trip as arrived, or check whether it is overdue and what to do.
+- Type: write
+- Parameters: trip_id (string, required) — e.g. "T1"; time (string, required) — current HH:MM; arrived (boolean, required) — true if the user says they got home
+- Returns:
+  - arrived → `{"id": "T1", "status": "arrived"}` (saved)
+  - not yet, on time → `{"id": "T1", "status": "on_the_way", "eta": "23:35", "minutes_left": 10}`
+  - not yet, more than 10 minutes late → `{"id": "T1", "status": "overdue", "eta": "23:35", "minutes_late": 15, "advice": "Ask if they are safe. Suggest contacting their guardian; if in danger, call 112."}`
+- Errors: unknown trip → `{"error": "Unknown trip 'T9'. Call start_trip first or check the trip id."}`; bad time → `{"error": "Invalid time. ..."}`
+- No separate confirmation: the user saying "도착했어" is the confirmation.
+- Example request: "나 도착했어" / "아직 가는 중인데 늦어지고 있어"
 
 ## Tool: calculate
 - Owner: (given — already implemented)
