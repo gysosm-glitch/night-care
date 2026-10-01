@@ -17,7 +17,7 @@ A 충북대 student living alone near campus (개신동/사창동/복대동/봉�
 
 ## What the assistant can do
 ### v1 — built
-- Find **real police boxes open right now** in a district, with phone and address (공공데이터포털)
+- Find **real police boxes and 119 safety centers** in a district, with phone and address (공공데이터포털)
 - Show the way from 충북대 정문: walking minutes, streetlight ratio, CCTV count, bus line and last bus
 - **Score the walking risk (0–100)** for a district at a given time, with reasons
 - Estimate a taxi fare including the 22:00–04:00 night surcharge
@@ -29,7 +29,7 @@ A 충북대 student living alone near campus (개신동/사창동/복대동/봉�
 
 ### v2 — planned (in priority order)
 1. **Recommend, don't just report.** Every "how do I get home" answer ends with one choice (walk / bus / taxi / escort). (Prompt rule added; keep checking it.)
-2. **More real facilities.** Emergency rooms, 119 safety centers, emergency bells from 공공데이터포털; fill 개신동's missing police box.
+2. **More real facilities.** Emergency rooms and emergency bells from 공공데이터포털; map the other 13 청주 119 centers and fill 개신동's missing police box.
 3. **No need to type the time.** `get_current_time` tool — the user can say "지금" instead of "23:10".
 4. **More starting points.** `origin` parameter: 정문, 중문, 후문 (each with its own routes).
 5. **Manage escort requests.** `list_escort_requests` and `cancel_escort` (write, confirm first).

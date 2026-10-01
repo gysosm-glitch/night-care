@@ -41,7 +41,7 @@ def guide_sections() -> list:
     return sections
 
 
-SPOT_ICONS = {"지구대": "🚓", "파출소": "🚓"}
+SPOT_ICONS = {"지구대": "🚓", "파출소": "🚓", "119안전센터": "🚒"}
 
 
 def show_emergency() -> None:
@@ -58,7 +58,7 @@ def show_safe_spots() -> None:
     from src.tools import data_store
     from src.tools.spot_tools import find_safe_spots
 
-    st.header("🚓 근처 지구대")
+    st.header("🚓 근처 지구대 · 🚒 119")
     area = st.selectbox("동네", list(data_store.load("routes")["routes"]))
     now = datetime.now(ZoneInfo("Asia/Seoul")).time().replace(second=0, microsecond=0)
     when = st.time_input("시각 (기본: 지금)", value=now, step=600)
@@ -70,7 +70,7 @@ def show_safe_spots() -> None:
         st.markdown(line)
     if not result.get("spots"):
         st.info("이 동네 지구대·파출소는 공공데이터에 없어요. 다른 동네를 골라 가까운 지구대를 확인하세요.")
-    st.caption("출처: 공공데이터포털 충북경찰청 지구대·파출소 현황 (2026-08-03)")
+    st.caption("출처: 공공데이터포털 충북경찰청 지구대·파출소 현황 (2026-08-03), 소방청 119안전센터 현황 (2026-07-01)")
     st.divider()
 
 

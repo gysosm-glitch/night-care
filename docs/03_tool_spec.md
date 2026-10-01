@@ -13,7 +13,7 @@ Write the spec BEFORE implementing a tool. The "Purpose" line becomes the tool d
 - Type: read
 - Parameters: area (string, required) — district name; time (string, required) — 24-hour HH:MM
 - Returns: `{"area": "봉명동", "time": "23:30", "spots": [{"id": "S11", "name": "봉명 지구대", "type": "지구대", "address": "충북 청주시 흥덕구 송절로64번길 13", "phone": "043-270-3705", "source": "공공데이터", "open_until": "24:00"}]}`
-  - Only real data from 공공데이터포털 (no fake places). 개신동 currently has none.
+  - Only real data from 공공데이터포털 (no fake places): 지구대·파출소 and 119안전센터 (`type`). 개신동 currently has none.
   - If nothing is open: `"spots": []` plus `"hint": "No safe spot open now. Call 112 in an emergency."`
 - Errors: unknown area → `{"error": "Unknown area '송정동'. Valid: 개신동, 사창동, 복대동, 봉명동, 율량동."}`; bad time → `{"error": "Invalid time. Use 24-hour HH:MM, e.g. '23:10'."}`
 - Example request: "봉명동 가는 길에 지금 들어갈 수 있는 안전한 곳 있어?"

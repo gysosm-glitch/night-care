@@ -35,6 +35,13 @@ def test_spots_real_police_has_phone_and_address():
     assert police["phone"] == "043-251-1703" and "1순환로 690" in police["address"]
 
 
+def test_spots_includes_real_119_center():
+    from src.tools.spot_tools import find_safe_spots
+    spots = {s["id"]: s for s in find_safe_spots("복대동", "02:00")["spots"]}
+    assert set(spots) == {"S5", "S12"}
+    assert spots["S12"]["type"] == "119안전센터" and spots["S12"]["phone"] == "043-249-9802"
+
+
 def test_spots_none_in_gaesin_has_hint():
     from src.tools.spot_tools import find_safe_spots
     r = find_safe_spots("개신동", "23:00")
