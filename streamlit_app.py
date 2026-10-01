@@ -1,7 +1,9 @@
 """Streamlit Cloud entry point. Runs src/app.py from the repo root so `from src...` imports work."""
 import os
 import runpy
+from datetime import datetime
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 import streamlit as st
 
@@ -39,7 +41,31 @@ def guide_sections() -> list:
     return sections
 
 
+SPOT_ICONS = {"지구대": "🚓", "파출소": "🚓", "24시 편의점": "🏪", "안심지킴이집": "🏠"}
+
+
+def show_safe_spots() -> None:
+    """Sidebar panel: pick a district and see safe spots open now, without asking the agent."""
+    from src.tools import data_store
+    from src.tools.spot_tools import find_safe_spots
+
+    st.header("🚓 근처 안심구역")
+    area = st.selectbox("동네", list(data_store.load("routes")["routes"]))
+    now = datetime.now(ZoneInfo("Asia/Seoul")).time().replace(second=0, microsecond=0)
+    when = st.time_input("시각 (기본: 지금)", value=now, step=600)
+    result = find_safe_spots(area, when.strftime("%H:%M"))
+    if result.get("spots"):
+        st.markdown("\n".join(
+            f"- {SPOT_ICONS.get(s['type'], '📍')} **{s['name']}** · {s['type']} · {s['open_until']}까지"
+            for s in result["spots"]))
+    else:
+        st.error("지금 열린 안심구역이 없어요. 위급하면 바로 **112**에 신고하세요.")
+    st.caption("🚨 위급하면 112 전화 · 문자 신고도 112로 · 장소는 데모용 가상 데이터")
+    st.divider()
+
+
 with st.sidebar:
+    show_safe_spots()
     st.header("📖 사용 설명서")
     st.caption("궁금한 항목을 눌러 펼쳐 보세요.")
     for i, (title, body) in enumerate(guide_sections()):
