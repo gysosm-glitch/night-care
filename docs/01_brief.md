@@ -1,5 +1,7 @@
 # Project Brief
 
+한국어: [01_brief.ko.md](01_brief.ko.md)
+
 > 초안 (Claude 작성) — 팀 검토 후 이 줄을 지우세요.
 
 ## Goal
@@ -37,7 +39,7 @@ A 충북대 student living alone near campus (개신동/사창동/복대동/봉�
 
 ## Out of scope
 - Real APIs (경찰청, 공공데이터, bus, map), real-time GPS tracking, calling 112 or messaging friends for the user, payments, multiple users / login
-- 지구대·파출소 come from 공공데이터포털 (충북경찰청, 2026-08-03), converted once into `data/safe_spots.json`. Routes, risk inputs, fares and the escort service are fake demo data. No fake places are shown. No live API calls.
+- 지구대·파출소 (충북경찰청, 2026-08-03) and 119안전센터 (소방청, 2026-07-01) come from 공공데이터포털, converted once into `data/safe_spots.json`. Routes, risk inputs, fares and the escort service are fake demo data. No fake places are shown. No live API calls.
 - The assistant never says a route is "100% safe" and never replaces 112.
 
 ## Why this is not a café agent (rename test)
